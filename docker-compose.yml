@@ -1,0 +1,51 @@
+version: '3'
+services:
+  db:
+    container_name: giganoto-db
+    image: postgres:12
+    volumes:
+      - dbdata:/var/lib/postgresql/data/
+    env_file:
+      - .env
+
+  server:
+    container_name: giganoto-api
+    build:
+      context: .
+      dockerfile: dockerfile_fastapi
+      network: host
+    volumes:
+      - .:/opt
+    env_file:
+      - .env
+    ports:
+      - '7000:8000'
+    depends_on:
+      - db
+
+  bot:
+    container_name: giganoto-bot
+    build:
+      context: .
+      dockerfile: dockerfile_linebot
+      network: host
+    volumes:
+      - .:/opt
+    env_file:
+      - .env
+    ports:
+      - '7070:8000'
+    depends_on:
+      - db
+
+  adminer:
+    container_name: giganoto-adminer
+    image: adminer:4.7.5
+    restart: always
+    ports:
+      - 7080:8080
+    depends_on:
+      - db
+
+volumes:
+  dbdata: null

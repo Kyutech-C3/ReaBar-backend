@@ -35,5 +35,15 @@ class Book(Base):
 	author = Column(String, nullable=True)
 	thumbnail_url = Column(String, nullable=True)
 	published_date = Column(Date, nullable=True)
+	page = Column(Integer, nullable=True)
 
 	users = relationship('User', secondary=Read.__tablename__)
+
+class ReadPage(Base):
+	__tablename__ = 'read_pages'
+	user_id = Column(String, ForeignKey('users.user_id'), primary_key=True)
+	year = Column(Integer, primary_key=True)
+	month = Column(Integer, primary_key=True)
+	week = Column(Integer, primary_key=True)
+	pages = Column(Integer)
+	quantity = Column(Integer)

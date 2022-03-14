@@ -20,6 +20,8 @@ pyjwt = "*"
 cerberus = "*"
 line-bot-sdk = "*"
 flask = "*"
+pyzbar = "*"
+pillow = "*"
 
 [dev-packages]
 

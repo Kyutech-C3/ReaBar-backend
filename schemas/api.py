@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -9,7 +9,7 @@ class Book(BaseModel):
     title: Optional[str]
     author: Optional[str]
     thumbnail_url: Optional[str]
-    published_date: Optional[datetime]
+    published_date: Optional[date]
     created_at: datetime = None
     
     class Config:

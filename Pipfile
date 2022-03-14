@@ -18,6 +18,8 @@ sqlalchemy-utils = "*"
 python-dotenv = "*"
 pyjwt = "*"
 cerberus = "*"
+line-bot-sdk = "*"
+flask = "*"
 
 [dev-packages]
 

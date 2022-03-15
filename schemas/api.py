@@ -40,11 +40,11 @@ class User(BaseModel):
     class Config:
         orm_mode = True
 
-class MockUser(BaseModel):
+class RankingUser(BaseModel):
     user_id: str
     name: str
-    books: List[Book]
+    value: int
 
 class Report(BaseModel):
-    months: List[str]
+    months: List[int]
     data: List[int]

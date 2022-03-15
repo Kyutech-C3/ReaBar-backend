@@ -14,7 +14,6 @@ from linebot import (
     LineBotApi
 )
 
-load_dotenv("localhost.env")
 YOUR_CHANNEL_ACCESS_TOKEN=os.environ.get('YOUR_CHANNEL_ACCESS_TOKEN')
 
 GOOGLE_API=os.environ.get('GOOGLE_API')

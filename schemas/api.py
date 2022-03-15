@@ -48,3 +48,9 @@ class RankingUser(BaseModel):
 class Report(BaseModel):
     months: List[int]
     data: List[int]
+
+class TotalInfo(BaseModel):
+    user_id: str
+    quantity: int
+    page: int
+    

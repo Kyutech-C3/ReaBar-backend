@@ -4,8 +4,8 @@ from sqlalchemy.orm.session import Session
 from fastapi import APIRouter
 from fastapi.params import Depends
 from db.main import get_db
-from cruds.api import create_report, get_ranking, get_books_order_by_query
-from schemas.api import Book, RankingUser, Report
+from cruds.api import create_report, get_ranking, get_books_order_by_query, get_total_info
+from schemas.api import Book, RankingUser, Report, TotalInfo
 from fastapi_pagination import paginate
 from fastapi_pagination import Page, paginate
 
@@ -20,6 +20,11 @@ class Type(str, Enum):
     page = "page"
 
 router = APIRouter()
+
+@router.get('/api/books/total/{user_id}', response_model=TotalInfo)
+async def get_total(user_id: str, db: Session = Depends(get_db)):
+  total_info = get_total_info(db, user_id)
+  return total_info
 
 @router.get('/api/books/{user_id}', response_model=Page[Book])
 async def books(user_id: str, order_by: ModelName, db: Session = Depends(get_db)):

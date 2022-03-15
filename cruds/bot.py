@@ -59,11 +59,8 @@ def create_user(db: Session, user_id: str, user_name: str) -> User:
         db.add(user_orm)
         db.commit()
         db.refresh(user_orm)
-        user = User.from_orm(user_orm)
-    
-    else:
-        user = User.from_orm(user_orm)
 
+    user = User.from_orm(user_orm)
     return user
 
 def book_register(db: Session, src_img_path: str, user: User) -> object:
@@ -84,7 +81,8 @@ def book_register(db: Session, src_img_path: str, user: User) -> object:
             title = book_info['items'][0]['volumeInfo']['title'],
             author = book_info['items'][0]['volumeInfo']['authors'][0],
             thumbnail_url = book_info['items'][0]['volumeInfo']['imageLinks']['smallThumbnail'],
-            published_date = book_info['items'][0]['volumeInfo']['publishedDate']
+            published_date = book_info['items'][0]['volumeInfo']['publishedDate'],
+            page = book_info['items'][0]['volumeInfo']['pageCount']
         )
         
         db.add(book_orm)
@@ -96,8 +94,6 @@ def book_register(db: Session, src_img_path: str, user: User) -> object:
     try:
         book_user_intermediate_table_register(db, user.user_id, isbn)
     except LeadAlreadyExistsException as e:
-        db.delete(book_orm)
-        db.commit()
         raise RegisterBookException('書籍の登録に失敗しました', e)
     else:
         return book

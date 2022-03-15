@@ -18,12 +18,14 @@ sqlalchemy-utils = "*"
 python-dotenv = "*"
 pyjwt = "*"
 cerberus = "*"
-line-bot-sdk = "*"
 flask = "*"
 pyzbar = "*"
 pillow = "*"
 python-dateutil = "*"
 fastapi-pagination = "*"
+aiofiles = "*"
+line-bot-sdk = "*"
+opencensus-ext-azure = "*"
 
 [dev-packages]
 

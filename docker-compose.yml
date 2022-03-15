@@ -5,6 +5,8 @@ services:
     image: postgres:12
     volumes:
       - dbdata:/var/lib/postgresql/data/
+    ports:
+      - '6060:5432'
     env_file:
       - .env
 
@@ -34,7 +36,7 @@ services:
     env_file:
       - .env
     ports:
-      - '7070:8000'
+      - '5000:80'
     depends_on:
       - db
 

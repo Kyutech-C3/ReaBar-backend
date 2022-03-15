@@ -1,0 +1,14 @@
+FROM python:3.9.6
+
+RUN mkdir -p /opt
+COPY . /opt/
+WORKDIR /opt
+
+RUN apt update
+RUN apt install -y libzbar0
+RUN pip install --upgrade pip --no-cache-dir
+RUN pip install -r requirements.txt --no-cache-dir
+
+EXPOSE 80
+ENV PYTHONPATH "${PYTHONPATH}:/opt/"
+CMD ["/opt/entrypoint.sh"]

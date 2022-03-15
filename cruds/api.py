@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import desc, func
 from db import models
 from sqlalchemy.orm.session import Session
-from schemas.api import RankingUser, Book, Report, User as UserSchema
+from schemas.api import RankingUser, Book, Report, TotalInfo, User as UserSchema
 
 def get_books_order_by_query(db: Session, user_id: str, order_by: str) -> List[Book]:
   
@@ -74,8 +74,6 @@ def get_ranking(db: Session, type: str) -> List[RankingUser]:
   
   q = q.filter(models.ReadPage.year == now.year, models.ReadPage.month == now.month, models.User.user_id == models.ReadPage.user_id).group_by(models.User.user_id, models.User.name).order_by(desc('val'))
 
-  print(q)
-
   ranking = []
   for uid, name, val in q:
     ranking.append(RankingUser(
@@ -85,3 +83,11 @@ def get_ranking(db: Session, type: str) -> List[RankingUser]:
     ))
   
   return ranking
+
+def get_total_info(db: Session, user_id: str) -> TotalInfo:
+  quantity, page = db.query(func.count(models.Book.isbn), func.sum(models.Book.page)).filter(models.Book.isbn == models.Read.isbn, models.Read.user_id == user_id).first()
+  return TotalInfo(
+    user_id = user_id,
+    quantity = quantity,
+    page = page
+  )

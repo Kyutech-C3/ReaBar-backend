@@ -78,7 +78,7 @@ def handle_image(event):
         resText = "書籍情報の取得が取得できませんでした。"
         print(e)
     except RegisterBookException as e:
-        resText = "書籍の登録に失敗しました。"
+        resText = "すでに同じ書籍が登録されています。"
         print(e)
     except SaveImageException as e:
         resText = "エラーが発生しました"

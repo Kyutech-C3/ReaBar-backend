@@ -8,3 +8,11 @@ class User(BaseModel):
 
     class Config:
         orm_mode = True
+
+class TotalInfo(BaseModel):
+    user_id: str
+    quantity: int
+    pages: int
+
+    class Config:
+        orm_mode = True

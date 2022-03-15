@@ -2,7 +2,7 @@ from typing import List
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from fastapi import HTTPException
-from sqlalchemy import func
+from sqlalchemy import desc, func
 from db import models
 from sqlalchemy.orm.session import Session
 from schemas.api import RankingUser, Book, Report, User as UserSchema
@@ -68,11 +68,13 @@ def get_ranking(db: Session, type: str) -> List[RankingUser]:
   now = datetime.now()
 
   if type == 'quantity':
-    q = db.query(models.ReadPage.user_id, models.User.name, func.sum(models.ReadPage.quantity))
+    q = db.query(models.User.user_id, models.User.name, func.sum(models.ReadPage.quantity).label('val'))
   if type == 'page':
-    q = db.query(models.ReadPage.user_id, models.User.name, func.sum(models.ReadPage.pages))
+    q = db.query(models.User.user_id, models.User.name, func.sum(models.ReadPage.pages).label('val'))
   
-  q = q.filter(models.ReadPage.year == now.year, models.ReadPage.month == now.month).group_by(models.ReadPage.user_id, models.User.name).limit(5)
+  q = q.filter(models.ReadPage.year == now.year, models.ReadPage.month == now.month, models.User.user_id == models.ReadPage.user_id).group_by(models.User.user_id, models.User.name).order_by(desc('val'))
+
+  print(q)
 
   ranking = []
   for uid, name, val in q:

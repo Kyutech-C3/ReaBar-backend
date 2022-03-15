@@ -10,6 +10,7 @@ class Book(BaseModel):
     author: Optional[str]
     thumbnail_url: Optional[str]
     published_date: Optional[date]
+    page: Optional[int]
     created_at: datetime = None
     
     class Config:

@@ -43,12 +43,7 @@ class User(BaseModel):
 class RankingUser(BaseModel):
     user_id: str
     name: str
-    quantity: int
-    page: int
-
-class Ranking(BaseModel):
-    type: str
-    ranking: List[RankingUser]
+    value: int
 
 class Report(BaseModel):
     months: List[int]

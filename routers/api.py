@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 from db.main import get_db
 from cruds.api import create_report, get_ranking, get_books_order_by_query
-from schemas.api import Book, Ranking, Report
+from schemas.api import Book, RankingUser, Report
 from fastapi_pagination import paginate
 from fastapi_pagination import Page, paginate
 
@@ -14,6 +14,10 @@ class ModelName(str, Enum):
     author = "author"
     published_date = "published_date"
     created_at = "created_at"
+
+class Type(str, Enum):
+    quantity = "quantity"
+    page = "page"
 
 router = APIRouter()
 
@@ -24,11 +28,11 @@ async def books(user_id: str, order_by: ModelName, db: Session = Depends(get_db)
   return paginate(books)
 
 @router.get('/api/reports/{user_id}', response_model=Report)
-async def get_report(user_id: str, type: str = 'quantity', db: Session = Depends(get_db)):
+async def get_report(user_id: str, type: Type, db: Session = Depends(get_db)):
   report = create_report(db, user_id, type)
   return report
 
-@router.get('/api/ranking', response_model=Ranking)
-async def get_read_info_ranking(type: str = 'quantity', db: Session = Depends(get_db)):
+@router.get('/api/ranking', response_model=List[RankingUser])
+async def get_read_info_ranking(type: Type, db: Session = Depends(get_db)):
   ranking = get_ranking(db, type)
   return ranking

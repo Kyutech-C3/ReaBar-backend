@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import func
 from db import models
 from sqlalchemy.orm.session import Session
-from schemas.api import Ranking, RankingUser, Book, Report, User as UserSchema
+from schemas.api import RankingUser, Book, Report, User as UserSchema
 
 def get_books_order_by_query(db: Session, user_id: str, order_by: str) -> List[Book]:
   
@@ -18,8 +18,6 @@ def get_books_order_by_query(db: Session, user_id: str, order_by: str) -> List[B
         )
   user = UserSchema.from_orm_custom(user_orm)
   books = user.books
-  print(books)
-  print("-----------" + order_by + "------------")
   if(order_by == "title"):
     books = sorted(books, key=lambda x:x.title)
 
@@ -48,7 +46,7 @@ def create_report(db: Session, user_id: str, type: str) -> Report:
     previous = now - relativedelta(months=11-i)
     read_pages = db.query(models.ReadPage).filter(models.ReadPage.user_id == user_id, models.ReadPage.year == previous.year, models.ReadPage.month == previous.month).all()
     if len(read_pages) == 0 and len(months) == 0:
-        continue
+      continue
     data = 0
     if type == 'page':
       for read_page in read_pages:
@@ -64,29 +62,24 @@ def create_report(db: Session, user_id: str, type: str) -> Report:
   )
   return report
 
-def get_ranking(db: Session, type: str) -> Ranking:
+def get_ranking(db: Session, type: str) -> List[RankingUser]:
   if not type in ['quantity', 'page']:
     raise HTTPException(status_code=400, detail='invalid query')
   now = datetime.now()
-  q = db.query(models.ReadPage.user_id, models.User.name, func.sum(models.ReadPage.quantity).label('qnt'), func.sum(models.ReadPage.pages).label('pg')).filter(models.ReadPage.year == now.year, models.ReadPage.month == now.month).group_by(models.ReadPage.user_id, models.User.name)
-  
+
   if type == 'quantity':
-    q = q.order_by('qnt')
+    q = db.query(models.ReadPage.user_id, models.User.name, func.sum(models.ReadPage.quantity))
   if type == 'page':
-    q = q.order_by('pg')
-  q.limit(5)
+    q = db.query(models.ReadPage.user_id, models.User.name, func.sum(models.ReadPage.pages))
+  
+  q = q.filter(models.ReadPage.year == now.year, models.ReadPage.month == now.month).group_by(models.ReadPage.user_id, models.User.name).limit(5)
 
   ranking = []
-
-  for uid, name, qnt, pg in q:
-    ru = RankingUser(
+  for uid, name, val in q:
+    ranking.append(RankingUser(
       user_id=uid,
       name=name,
-      quantity=qnt,
-      page=pg
-    )
-    ranking.append(ru)
-  return Ranking(
-    type=type,
-    ranking=ranking
-  )
+      value=val
+    ))
+  
+  return ranking

@@ -2,7 +2,11 @@ from flask import Flask, request, abort
 from dotenv import load_dotenv
 from pathlib import Path
 import os
-from cruds.bot import save_img, get_isbn_by_bar_code, get_book_info_by_isbn
+from db.main import get_db
+from sqlalchemy.orm import Session
+from schemas.bot import User
+from cruds.bot import save_img, book_register, create_user
+from exception import GetIsbnException, GetBookInfoException, RegisterBookException, SaveImageException
 
 from linebot import (
     LineBotApi, WebhookHandler
@@ -11,12 +15,14 @@ from linebot.exceptions import (
     InvalidSignatureError
 )
 from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage, ImageMessage
+    MessageEvent, TextSendMessage, ImageMessage
 )
 
 load_dotenv()
 YOUR_CHANNEL_ACCESS_TOKEN=os.environ.get('YOUR_CHANNEL_ACCESS_TOKEN')
 YOUR_CHANNEL_SECRET=os.environ.get('YOUR_CHANNEL_SECRET')
+
+db: Session = next(get_db())
 
 SAVE_DIR=os.environ.get('SAVE_DIR')
 SRC_IMG_PATH = SAVE_DIR + "/{}.jpg"
@@ -47,24 +53,47 @@ def callback():
 
     return 'OK'
 
+# @handler.add(MessageEvent, message=TextMessage)
+# def handle_message(event):
+#     line_bot_api.reply_message(
+#         event.reply_token,
+#         TextSendMessage(text=event.message.text)) #ここでオウム返しのメッセージを返します。
+
 # 画像を受け取った際の処理
 @handler.add(MessageEvent, message=ImageMessage)
 def handle_image(event):
+    profile = line_bot_api.get_profile(event.source.user_id)
+    user = create_user(db, profile.user_id, profile.display_name)
     message_id = event.message.id
     src_img_path = SRC_IMG_PATH.format(message_id)   # 保存する画像のパス
-
-    save_img(message_id, src_img_path)   # 画像を一時保存する
-    isbn = get_isbn_by_bar_code(src_img_path)   # ISBNの取得
-    book_info = get_book_info_by_isbn(isbn)
-    print(book_info)
+    
+    try:
+        save_img(message_id, src_img_path)   # 画像を一時保存する
+        book_info = book_register(db, src_img_path, user)
+        print(book_info)
+    except GetIsbnException as e:
+        resText = "バーコードの読み込みに失敗しました。もう一度、全体がきれいに写るように写真を撮影してください。"
+        print(e)
+    except GetBookInfoException as e:
+        resText = "書籍情報の取得が取得できませんでした。"
+        print(e)
+    except RegisterBookException as e:
+        resText = "書籍の登録に失敗しました。"
+        print(e)
+    except SaveImageException as e:
+        resText = "エラーが発生しました"
+        print(e)
+    else:
+        resText = f"タイトル：{book_info.title}\n著者：{book_info.author}サムネ：{book_info.thumbnail_url}"
+    finally:
+        # 一時保存していた画像を削除
+        Path(SRC_IMG_PATH.format(message_id)).absolute().unlink()
 
     # 書籍情報を返す
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text=f"タイトル：{book_info['items'][0]['volumeInfo']['title']}\n著者：{book_info['items'][0]['volumeInfo']['authors'][0]}")
+        TextSendMessage(text=resText)
     )
-    # 一時保存していた画像を削除
-    Path(SRC_IMG_PATH.format(message_id)).absolute().unlink()
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

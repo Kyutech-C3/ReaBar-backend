@@ -1,3 +1,4 @@
+from typing import List
 from calendar import month
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -5,7 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy.sql.functions import user
 from db import models
 from sqlalchemy.orm.session import Session
-from schemas.api import Report, User as UserSchema
+from schemas.api import Book, Report, User as UserSchema
 
 months_name = [
   "January",
@@ -22,15 +23,33 @@ months_name = [
   "December",
 ]
 
-def get_books_by_id(db: Session, user_id: str) -> UserSchema:
+def get_books_order_by_query(db: Session, user_id: str, order_by: str) -> List[Book]:
+  
   user_orm = db.query(models.User).filter(models.User.user_id == user_id).first()
+  
   if user_orm is None:
     raise HTTPException(
             status_code=404,
             detail="Not Found User"
         )
   user = UserSchema.from_orm_custom(user_orm)
-  return user.books
+  books = user.books
+  print(books)
+  print("-----------" + order_by + "------------")
+  if(order_by == "title"):
+    books = sorted(books, key=lambda x:x.title)
+
+  if(order_by == "author"):
+    books = sorted(books, key=lambda x: x.author)
+  
+  if(order_by == "published_date"):
+    books = sorted(books, key=lambda x: x.published_date)
+  
+  if(order_by == "created_at"):
+    books = sorted(books, key=lambda x: x.created_at)
+
+  return books
+
 
 def create_report(db: Session, user_id: str, type: str) -> Report:
   if not type in ['quantity', 'page']:

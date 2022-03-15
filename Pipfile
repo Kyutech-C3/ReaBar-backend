@@ -22,6 +22,7 @@ line-bot-sdk = "*"
 flask = "*"
 pyzbar = "*"
 pillow = "*"
+python-dateutil = "*"
 
 [dev-packages]
 

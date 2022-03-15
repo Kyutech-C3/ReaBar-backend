@@ -43,3 +43,7 @@ class MockUser(BaseModel):
     user_id: str
     name: str
     books: List[Book]
+
+class Report(BaseModel):
+    months: List[str]
+    data: List[int]

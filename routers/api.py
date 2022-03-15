@@ -6,10 +6,13 @@ from fastapi.params import Depends
 from db.main import get_db
 from cruds.api import get_books_by_id
 from schemas.api import Book
+from fastapi_pagination import paginate
+from fastapi_pagination import Page, add_pagination, paginate
+
 
 router = APIRouter()
 
-@router.get('/books/{user_id}', response_model=List[Book])
+@router.get('/books/{user_id}', response_model=Page[Book])
 async def books(user_id: str, db: Session = Depends(get_db)):
   books = get_books_by_id(db, user_id)
-  return books
+  return paginate(books)
